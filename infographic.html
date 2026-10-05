@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Tool to Transformation</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: #f6f3ee;
+        color: #202124;
+        line-height: 1.6;
+    }
+    .hero {
+        min-height: 52vh;
+        padding: 70px 7vw 55px;
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #151515 0%, #292929 55%, #4a4a4a 100%);
+        color: white;
+    }
+    .hero-inner { max-width: 1050px; margin: auto; width: 100%; }
+    .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-size: .78rem;
+        font-weight: 700;
+        opacity: .75;
+        margin-bottom: 14px;
+    }
+    h1 {
+        font-size: clamp(2.7rem, 7vw, 5.8rem);
+        line-height: .98;
+        margin: 0 0 22px;
+        max-width: 850px;
+    }
+    .hero p {
+        font-size: clamp(1.05rem, 2vw, 1.35rem);
+        max-width: 760px;
+        color: #e8e8e8;
+        margin: 0;
+    }
+    .intro {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 55px 25px 30px;
+        text-align: center;
+    }
+    .intro h2 { font-size: 2rem; margin-bottom: 10px; }
+    .intro p { color: #555; }
+    .timeline {
+        max-width: 1050px;
+        margin: 20px auto 70px;
+        padding: 0 25px;
+        position: relative;
+    }
+    .timeline::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 15px;
+        bottom: 15px;
+        width: 4px;
+        background: #c9c4bb;
+        transform: translateX(-50%);
+        border-radius: 4px;
+    }
+    .node {
+        position: relative;
+        width: 50%;
+        padding: 20px 50px 30px 0;
+    }
+    .node:nth-child(even) {
+        margin-left: 50%;
+        padding: 20px 0 30px 50px;
+    }
+    .node-button {
+        width: 100%;
+        text-align: left;
+        border: 2px solid transparent;
+        border-radius: 22px;
+        background: white;
+        padding: 28px;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0,0,0,.08);
+        transition: .25s ease;
+        font: inherit;
+    }
+    .node:nth-child(even) .node-button { text-align: left; }
+    .node-button:hover, .node-button.active {
+        transform: translateY(-4px);
+        border-color: #222;
+        box-shadow: 0 16px 35px rgba(0,0,0,.13);
+    }
+    .dot {
+        position: absolute;
+        top: 43px;
+        right: -13px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #222;
+        border: 5px solid #f6f3ee;
+        z-index: 2;
+    }
+    .node:nth-child(even) .dot { left: -13px; right: auto; }
+    .year { font-size: .8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #777; }
+    .icon { font-size: 2.4rem; margin: 8px 0; }
+    .node h3 { margin: 0 0 8px; font-size: 1.55rem; }
+    .node .teaser { color: #666; margin: 0; }
+    .detail {
+        display: none;
+        max-width: 1050px;
+        margin: -35px auto 65px;
+        padding: 0 25px;
+    }
+    .detail.show { display: block; }
+    .detail-card {
+        background: #202020;
+        color: white;
+        border-radius: 25px;
+        padding: 38px;
+        box-shadow: 0 18px 45px rgba(0,0,0,.18);
+        animation: rise .25s ease;
+    }
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .detail-card h2 { margin-top: 0; font-size: 2rem; }
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 25px;
+    }
+    .detail-box {
+        background: rgba(255,255,255,.08);
+        padding: 20px;
+        border-radius: 16px;
+    }
+    .detail-box strong {
+        display: block;
+        color: #d7d7d7;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: .72rem;
+        margin-bottom: 7px;
+    }
+    .question {
+        max-width: 900px;
+        margin: 0 auto 75px;
+        padding: 0 25px;
+        text-align: center;
+    }
+    .question-box {
+        background: white;
+        border-radius: 25px;
+        padding: 40px;
+        box-shadow: 0 12px 35px rgba(0,0,0,.08);
+    }
+    .question h2 { font-size: 2.1rem; margin-top: 0; }
+    .question p { color: #555; font-size: 1.08rem; }
+    .sources {
+        background: #e8e4dc;
+        padding: 45px 7vw;
+    }
+    .sources-inner { max-width: 1000px; margin: auto; }
+    .sources h2 { margin-top: 0; }
+    .sources p, .sources li { color: #555; }
+    footer {
+        text-align: center;
+        padding: 25px;
+        font-size: .85rem;
+        color: #777;
+    }
+    @media (max-width: 720px) {
+        .hero { padding: 55px 25px; }
+        .timeline::before { left: 18px; }
+        .node, .node:nth-child(even) {
+            width: 100%;
+            margin-left: 0;
+            padding: 15px 0 25px 45px;
+        }
+        .dot, .node:nth-child(even) .dot {
+            left: 5px;
+            right: auto;
+        }
+        .detail-grid { grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Human Artifact • Module 3</div>
+    <h1>From Tool to Transformation</h1>
+    <p>Technology does more than give humans new tools. As technologies spread, they can change how we organize our lives, share knowledge, work, and make decisions.</p>
+  </div>
+</section>
+
+<section class="intro">
+  <h2>When does a tool become part of the world?</h2>
+  <p>
+    Click each technology in the timeline. Each one began as a made thing with a particular purpose,
+    but its effects reached beyond that original purpose.
+  </p>
+</section>
+
+<section class="timeline">
+
+  <div class="node">
+    <span class="dot"></span>
+    <button class="node-button" data-id="clock">
+      <div class="year">Medieval Europe → early modern era</div>
+      <div class="icon">🕐</div>
+      <h3>Mechanical Clock</h3>
+      <p class="teaser">A technology for measuring time became a technology for organizing life around time.</p>
+    </button>
+  </div>
+
+  <div class="node">
+    <span class="dot"></span>
+    <button class="node-button" data-id="press">
+      <div class="year">15th century</div>
+      <div class="icon">🖨️</div>
+      <h3>Printing Press</h3>
+      <p class="teaser">A faster way to reproduce words helped transform how information could spread.</p>
+    </button>
+  </div>
+
+  <div class="node">
+    <span class="dot"></span>
+    <button class="node-button" data-id="computer">
+      <div class="year">20th century → today</div>
+      <div class="icon">💻</div>
+      <h3>Computer & Internet</h3>
+      <p class="teaser">Machines for processing information became infrastructure for communication and everyday life.</p>
+    </button>
+  </div>
+
+  <div class="node">
+    <span class="dot"></span>
+    <button class="node-button" data-id="ai">
+      <div class="year">21st century</div>
+      <div class="icon">🤖</div>
+      <h3>Artificial Intelligence</h3>
+      <p class="teaser">A tool for performing tasks can also influence how humans learn, create, and make decisions.</p>
+    </button>
+  </div>
+
+</section>
+
+<section class="detail" id="detail">
+  <div class="detail-card">
+    <h2 id="detail-title"></h2>
+    <p id="detail-description"></p>
+    <div class="detail-grid">
+      <div class="detail-box">
+        <strong>Started as</strong>
+        <span id="detail-start"></span>
+      </div>
+      <div class="detail-box">
+        <strong>Spread changed</strong>
+        <span id="detail-change"></span>
+      </div>
+      <div class="detail-box">
+        <strong>Bigger question</strong>
+        <span id="detail-question"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="question">
+  <div class="question-box">
+    <h2>The pattern</h2>
+    <p>
+      A technology can begin as a solution to one problem and become something much larger once people
+      adopt it. The printing press changed the spread of knowledge. The clock changed how time could
+      structure daily life. Computers changed our relationship with information.
+    </p>
+    <p>
+      <strong>So what happens when the technology starts helping us make the decisions themselves?</strong>
+    </p>
+    <p>
+      That is the question I want to explore next with AI.
+    </p>
+  </div>
+</section>
+
+<section class="sources">
+  <div class="sources-inner">
+    <h2>Sources & Course Connections</h2>
+    <p>This infographic was created for Module 3 and draws on the course materials about technological spread, normalization, and the printing press.</p>
+    <ul>
+      <li>Course Module 3: Introduction to Modernity — FIU course materials.</li>
+      <li>Mumford, Lewis. “Mumford on Clocks,” <em>The Myth of the Machine</em>, Chapter 2, as assigned in the course.</li>
+      <li>Course materials on Gutenberg and the spread of European printing activity.</li>
+      <li>Suleyman, Mustafa. <em>The Coming Wave</em>, Chapter 3, as assigned in the course.</li>
+    </ul>
+    <p><strong>Note:</strong> The infographic is an interpretive visualization of course concepts, not a complete history of each technology.</p>
+  </div>
+</section>
+
+<footer>
+  Human Artifact • Interactive infographic • Created by Kahlil Hall
+</footer>
+
+<script>
+const data = {
+  clock: {
+    title: "🕐 Mechanical Clock",
+    description: "The mechanical clock was more than a better way to tell time. As precise timekeeping spread, measured time became increasingly useful for coordinating activities and organizing daily life.",
+    start: "A device for measuring and displaying time.",
+    change: "People could coordinate activities around standardized, measurable time.",
+    question: "What happens when a technology changes not only what we do, but how we structure our lives?"
+  },
+  press: {
+    title: "🖨️ Printing Press",
+    description: "The printing press made it possible to reproduce texts much more efficiently. Its importance went beyond producing books: it helped ideas travel farther and challenged existing patterns of authority and access to knowledge.",
+    start: "A technology for reproducing written material.",
+    change: "Information and ideas could circulate much more widely.",
+    question: "When information becomes easier to spread, who gets to participate in creating and challenging knowledge?"
+  },
+  computer: {
+    title: "💻 Computer & Internet",
+    description: "Computers transformed the speed and scale of information processing. The internet then connected people and information across distance, making digital communication part of ordinary life.",
+    start: "Machines for processing and storing information.",
+    change: "Information became increasingly fast, digital, connected, and accessible.",
+    question: "When information becomes almost always available, does our relationship with knowledge change?"
+  },
+  ai: {
+    title: "🤖 Artificial Intelligence",
+    description: "AI is different because it can interact with people and perform tasks that once required significant human effort. As AI spreads, it may affect not only productivity but also learning, creativity, and decision-making.",
+    start: "Systems designed to perform tasks associated with human intelligence.",
+    change: "AI is moving from a specialized technology toward an everyday tool used across many areas of life.",
+    question: "If technology can help us make more and more decisions, how much decision-making should we still do ourselves?"
+  }
+};
+
+const buttons = document.querySelectorAll(".node-button");
+const detail = document.getElementById("detail");
+
+buttons.forEach(button => {
+  button.addEventListener("click", () => {
+    const item = data[button.dataset.id];
+
+    buttons.forEach(b => b.classList.remove("active"));
+    button.classList.add("active");
+
+    document.getElementById("detail-title").textContent = item.title;
+    document.getElementById("detail-description").textContent = item.description;
+    document.getElementById("detail-start").textContent = item.start;
+    document.getElementById("detail-change").textContent = item.change;
+    document.getElementById("detail-question").textContent = item.question;
+
+    detail.classList.add("show");
+    detail.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+});
+</script>
+
+</body>
+</html>
